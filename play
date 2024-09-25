@@ -1,0 +1,5 @@
+#!/bin/sh
+
+# avoid aliases
+$(which nvim | awk '{print$1}') -c "source game.vim" --clean
+

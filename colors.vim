@@ -8,6 +8,6 @@ set background=dark
 set termguicolors
 
 hi! Normal    guibg=#000000 guifg=#eeeeee
-hi! Player                  guifg=#eeeeee
-hi! MapHidden               guifg=#000000
+hi! Player                  guifg=#ffee8c
+" TODO hi! MapHidden               guifg=#000000
 hi! Conceal                               gui=bold 

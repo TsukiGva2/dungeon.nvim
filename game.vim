@@ -64,11 +64,11 @@ function LoadTexture()
 	call matchadd('Conceal', '-::', 10, -1, {'conceal':" "})
 
 	" Player
-	call matchadd('Player', "-", 10, -1)
+	call matchadd('Player', '\%u' . g:main_character, 10, -1)
 
-	" MapHidden
-	call matchadd('MapHidden', '#.\+#', 10, -1)
-	set cursorline
+	" TODO MapHidden
+	" call matchadd('MapHidden', '#.\+#', 10, -1)
+	" set cursorline
 
 	" get theme
 	source colors.vim
@@ -79,6 +79,7 @@ function LoadTexture()
 	hi Cursor blend=100
 	set guicursor+=a:Cursor/lCursor
 
+	set nowrap
 	set nonumber
 	set norelativenumber
 
@@ -102,8 +103,6 @@ endfunction
 " Collide with walls right
 function MoveRight()
 
-	call AnimateMove()
-
 	let l:char = strgetchar(getline('.')[col('.') + 3:], 0)
 
 	if l:char >= 0
@@ -115,8 +114,6 @@ endfunction
 
 " Collide with walls left
 function MoveLeft()
-
-	call AnimateMove()
 
 	if col('.') <= 2
 		return
@@ -134,8 +131,6 @@ endfunction
  " Collide with walls up
 function MoveUp()
 
-	call AnimateMove()
-
 	if line('.') <= 1
 		return
 	endif
@@ -152,8 +147,6 @@ endfunction
 
 " Collide with walls down
 function MoveDown()
-
-	call AnimateMove()
 
 	if line('.') >= line('$')
 		return
@@ -204,8 +197,6 @@ function LoadControls()
 	nnoremap <C-H> 		<esc>
 	nnoremap <Tab>		<esc>
 	nnoremap <C-I> 		<esc>
-	nnoremap <NL>		<esc>
-	nnoremap <S-NL>	       	<esc>
 	nnoremap <C-J> 	       	<esc>
 	nnoremap <C-L> 	       	<esc>
 	nnoremap <CR>	       	<esc>
@@ -384,6 +375,10 @@ function LoadControls()
 	" debug mode
 	nnoremap <up><up><down><down><left><right><left><right>ba	:call DebugMode()<cr>
 
+	" TODO: check after moving, to see
+	"  - if new area was found
+	"  - if enemy was confronted
+	"  - if item was obtained
 	nnoremap k :call MoveUp()<cr>
 	nnoremap h :call MoveLeft()<cr>
 	nnoremap j :call MoveDown()<cr>
@@ -393,7 +388,54 @@ function LoadControls()
 endfunction
 
 " World generation
+function GenerateBounded(width)
+        normal!0o|
+	execute "normal!" . string(a:width) . "A "
+	normal!A|
+endfunction
+
+function GenerateVerticalBounds(width, start, height)
+	execute "normal!:" . string(a:start) . "\<cr>"
+        normal!0i-
+	execute "normal!" . string(a:width) . "A-"
+	normal!A-
+
+	execute "normal!:" . string(a:start + a:height) . "\<cr>"
+        normal!0o-
+	execute "normal!" . string(a:width) . "A-"
+	normal!A-
+endfunction
+
+function RandomNumber(min, max)
+
+	call luaeval('math.randomseed(os.time())')
+	let l:num = luaeval('math.random(' . string(a:min) . ', ' . string(a:max) . ')')
+
+	return l:num
+endfunction
+
 function RandomStructure(max_column)
+endfunction
+
+function RandomRoom()
+	
+	let l:start    = line(".")
+
+	let l:height   = RandomNumber(16,70)
+	let l:width    = RandomNumber(16,70)
+
+	" position of the door along the middle of height/width
+	let l:door_pos = RandomNumber(1,40)
+
+	let l:c = 1
+
+	while l:c <= l:height
+		call GenerateBounded(l:width)
+
+		let l:c += 1
+	endwhile
+
+	call GenerateVerticalBounds(l:width, l:start, l:height) 
 endfunction
 
 " Game
@@ -405,20 +447,7 @@ function NewGame()
 	set noautoindent
 	set nosmartindent
 
-        normal!ggO--------------------------------
-        normal!0o|               |#             #
-        normal!0o|               |#             #
-        normal!0o|               /              #
-        normal!0o|               |#             #
-        normal!0o|               |#             #
-        normal!0o|               |#             #
-        normal!0o#-----   -------#--------------|
-        normal!0o|               |
-        normal!0o|               |
-        normal!0o|               |
-        normal!0o|               |
-        normal!0o|               |
-        normal!0o-----------------
+	call RandomRoom()
 	normal!gg0lljjj
 
  	execute "normal! r lr\<c-v>u" . g:main_character
